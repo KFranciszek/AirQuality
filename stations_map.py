@@ -1,6 +1,11 @@
 
 import sqlite3
 import folium
+import geopy
+from geopy import geocoders
+from geopy.geocoders import Nominatim
+from geopy.distance import  geodesic
+
 
 
 class StationsMap():
@@ -25,7 +30,28 @@ class StationsMap():
             marker.add_to(map)
         map.save('map.html')
 
+    def show_station_on_map_by_distance(self, location,distance_point):
+        geolocator = Nominatim(user_agent="myGeocoder")
+        location_check=geolocator.geocode(location)
+        location_check=(location_check.latitude, location_check.longitude)
+        conn = sqlite3.connect('airquality_db_test2.db')
+        c = conn.cursor()
+        c.execute(f'''SELECT gegr_lat,gegr_lon,station_name from stations''')
+        search_result = c.fetchall()
+        conn.commit()
+        conn.close()
+        point1 = location_check
+        locations = []
+        for i in search_result:
+            point2 = (i[0],i[1])
+            distance = geodesic(point1,point2)
+            #print(distance)
+            locations.append(distance.kilometers)
 
+        for index, x in enumerate(locations):
+            if x <= distance_point:
+                print(search_result[index][2], x)
 
 stations_map = StationsMap()
-stations_map.show_station_on_map()
+locations = stations_map.show_station_on_map_by_distance("Poznań",50)
+
