@@ -10,6 +10,7 @@ class DataaAnalysis():
             c.execute(f'''Select AVG(value) from sensors_data where sensor_id = "{sensor_id}"''')
             search_result = c.fetchone()[0]
             conn.commit()
+            c.close()
             conn.close()
             return round(search_result, 3)
         except sqlite3.Error as e:
@@ -29,6 +30,7 @@ class DataaAnalysis():
             c.execute(f'''Select max(value), min(value) from sensors_data where sensor_id = "{sensor_id}"''')
             search_result = c.fetchone()[:]
             conn.commit()
+            c.close()
             conn.close()
             return ("Max value:", search_result[0], "Min value:", search_result[1])
         except sqlite3.Error as e:
