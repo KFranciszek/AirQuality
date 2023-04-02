@@ -5,15 +5,57 @@ from station_info import StationInfo
 from stations_map import StationsMap
 import pandas
 import streamlit.components.v1 as components
+from unidecode import unidecode
 
 station_info = StationInfo()
 stations_map = StationsMap()
 
 st.title("Air Quality App")
 st.sidebar.title("Data filtering")
+
+def station_filtr(stations):
+    station_list = [i[1] for i in stations]
+    stations_id = {i[1]: i[2] for i in stations}
+    selected_station = st.sidebar.selectbox("Select a station", station_list)
+    if station_list:
+        stations_id = stations_id[selected_station]
+        sensors_mesure = station_info.sensors_list_by_station_all_db(stations_id)
+        if sensors_mesure:
+            parameters = [i[2] for i in sensors_mesure]
+            selected_parameters = st.sidebar.selectbox("Select parametr", parameters)
+            if selected_parameters:
+                selected_parameter_index = parameters.index(selected_parameters)
+                parameters_id = sensors_mesure[selected_parameter_index][0]
+                parameters_data = station_info.sensors_data_by_sensors_db(parameters_id)
+                #df = pd.DataFrame(parameters_data)
+                df = pd.DataFrame(parameters_data, columns=['Kolumna 1', 'Kolumna 2', 'Kolumna 3','Kolumna 4'])
+                df = df.loc[:, ['Kolumna 3', 'Kolumna 4']].rename(
+                    columns={'Kolumna 3': 'Date', 'Kolumna 4': 'Value'})
+                st.write("Statistical data on the selected reagent.")
+                st.write(df)
+
+#CITY CHOSE#
 city_name = st.sidebar.text_input("Find stations in a given city")
-city_list = station_info.station_list_by_city_all_db()
-ciity_name_list =st.sidebar.selectbox("Chose city:",city_list)
+if city_name:
+    stations = station_info.station_list_by_city_user_db(city_name)
+    if stations:
+        st.sidebar.write("Measuring stations in the city:")
+        station_filtr(stations)
+    else:
+        st.sidebar.write("No stations in city")
+
+#CITY DROPDWOWN#
+if not city_name:
+    city_list = station_info.station_list_by_city_all_db()
+    city_list = sorted([i[0] for i in city_list],key=lambda city_list: unidecode(city_list))
+    city_list=st.sidebar.selectbox("Chose city:",city_list)
+    if city_list and not city_name:
+        stations = station_info.station_list_by_city_user_db(city_list)
+        station_filtr(stations)
+else:
+    None
+
+#CITY MAP#
 city_map_show = st.sidebar.button("Show city map")
 if city_map_show:
     # Read the content of the 'map.html' file
@@ -23,37 +65,6 @@ if city_map_show:
     # Display the HTML content of the map
     components.html(map_html, width=700, height=500)
 
-if city_name:
-    stations = station_info.station_list_by_city_user_db(city_name)
-    #def city_tape():
-    if stations:
-       st.sidebar.write("Measuring stations in the city:")
-       station_list=[i[1] for i in stations]
-       stations_id ={i[1]: i[2]for i in stations}
-       #st.write(stations_id)
-       selected_station = st.sidebar.selectbox("Select a station", station_list)
-       if station_list:
-           stations_id = stations_id[selected_station]
-           sensors_mesure = station_info.sensors_list_by_station_all_db(stations_id)
-           if sensors_mesure:
-               parameters = [i[2] for i in sensors_mesure]
-               selected_parameters = st.sidebar.selectbox("Select parametr",parameters)
-               if selected_parameters:
-                   #button_all=st.sidebar.button("Show all data in sensor")
-                   #button_all = station_info.sensors_data_by_stations_db(stations_id)
-                   #st.write(button_all)
-                   selected_parameter_index = parameters.index(selected_parameters)
-                   parameters_id = sensors_mesure[selected_parameter_index][0]
-                   parameters_data = station_info.sensors_data_by_sensors_db(parameters_id)
-                   df = pd.DataFrame(parameters_data)
-                   st.write(df)
 
 
 
-
-    else:
-        st.sidebar.write("No stations in city")
-
-
-#if ciity_name_list:
-#    city_tape()
