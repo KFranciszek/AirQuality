@@ -45,9 +45,8 @@ def station_filtr(stations):
                 parameters_id = sensors_mesure[selected_parameter_index][0]
                 parameters_data = station_info.sensors_data_by_sensors_db(parameters_id)
                 df = pd.DataFrame(parameters_data, columns=['Kolumna 1', 'Kolumna 2', 'Kolumna 3','Kolumna 4'])
-                df = df.loc[:, ['Kolumna 1', 'Kolumna 2']].rename(
-                    columns={'Kolumna 1': 'Date', 'Kolumna 2': 'Value'})
-                df = df.dropna(subset=['Value'])
+                df = df.loc[:, ['Kolumna 3', 'Kolumna 4']].rename(
+                    columns={'Kolumna 3': 'Date', 'Kolumna 4': 'Value'})
                 st.write("Statistical data on the selected reagent.")
                 show_chart=st.line_chart(df,x="Date",y="Value")
                 st.write(df)
