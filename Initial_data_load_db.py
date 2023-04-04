@@ -38,7 +38,7 @@ class DataBaseWork():
             "commune_name"	VARCHAR(255),
             "district_name"	VARCHAR(255),
             "province_name"	VARCHAR(255),
-            "address_street" VARCHAR(255)
+            "address_street" VARCHAR(255),
              UNIQUE(stations_id,station_name,gegr_lat,gegr_lon,city_id,city_name,commune_name,district_name,province_name,address_street))''')
             conn.commit()
             c.close()
@@ -79,7 +79,6 @@ class DataBaseWork():
 
     # Function that inserts data into the 'sensors' table with INSERT OR IGNORE to avoid duplicates
     def initial_payment_sensors(self):
-        #Initial load data from API, sensors table.
         try:
             api_url = 'https://api.gios.gov.pl/pjp-api/rest/station/findAll'
             response = requests.get(api_url)
@@ -114,9 +113,8 @@ class DataBaseWork():
             conn.close()
 
 
-#BUG:Do poprawy unikalność rekordów data
     def initial_payment_getData(self):
-        # Initial load data from API, sensors data table.
+        #Initial load data from API, sensors data table.
         try:
             api_url = 'https://api.gios.gov.pl/pjp-api/rest/station/findAll'
             response = requests.get(api_url)
@@ -129,8 +127,6 @@ class DataBaseWork():
         ids_sensors = [s['id'] for lst in sensors_data for s in lst]
         api_url = 'https://api.gios.gov.pl/pjp-api/rest/data/getData/'
         sensors_data = [{'sensor_id':i,'data':requests.get(api_url + str(i)).json()} for i in ids_sensors]
-        #sensors_data_null = []
-        #sensors_data_null = []
         for dictionary in sensors_data:
             if dictionary.get("data").get("values") is not None:
                 for value in dictionary["data"]["values"]:
@@ -164,4 +160,4 @@ class DataBaseWork():
 
 DataBaseWork_db= DataBaseWork()
 #DataBaseWork_db_c = DataBaseWork_db.db_create()
-DataBaseWork_db_c = DataBaseWork_db.initial_payment_getData()
+DataBaseWork_db_c = DataBaseWork_db.initial_payment_sensors()
