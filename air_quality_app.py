@@ -3,7 +3,6 @@ import stations_map
 import streamlit as st
 from station_info import StationInfo
 from stations_map import StationsMap
-#from Initial_data_load_db import DataBaseWork
 import pandas
 import streamlit.components.v1 as components
 from unidecode import unidecode
@@ -11,23 +10,13 @@ import  matplotlib as plt
 
 station_info = StationInfo()
 stations_map = StationsMap()
-#data_base_work = DataBaseWork()
-
+st.set_page_config(layout="wide")
 st.title("Air Quality App")
-st.sidebar.title("Data filtering")
+main_container = st.container()
+col1, col2 = main_container.columns([1, 1])
 
-# style_tabel = """
-# <style>
-#     .reportview-container .main {
-#         max-width: 1500px;
-#         padding-top: 50px;
-#         padding-right: 100px;
-#         padding-left: 100px;
-#         padding-bottom: 50px;
-#     }
-# </style>
-# """
-
+with st.sidebar:
+    st.sidebar.title("Data filtering")
 
 
 def station_filtr(stations):
@@ -47,9 +36,12 @@ def station_filtr(stations):
                 df = pd.DataFrame(parameters_data, columns=['Kolumna 1', 'Kolumna 2', 'Kolumna 3','Kolumna 4'])
                 df = df.loc[:, ['Kolumna 3', 'Kolumna 4']].rename(
                     columns={'Kolumna 3': 'Date', 'Kolumna 4': 'Value'})
-                st.write("Statistical data on the selected reagent.")
-                show_chart=st.line_chart(df,x="Date",y="Value")
-                st.write(df)
+                with col1:
+                    st.write("Tabel data.")
+                    st.dataframe(df,width=500, height=800)
+                with col2:
+                    st.write("Charts and mapa data.")
+                    show_chart=st.line_chart(df,x="Date",y="Value")
 
 
 
@@ -81,10 +73,6 @@ if city_map_show:
     with open("map.html", "r", encoding="utf-8") as file:
         map_html = file.read()
     # Display the HTML content of the map
-    components.html(map_html, width=700, height=500)
-
-
-#DB UPDATE#
-#update_data = st.sidebar.button("Update data")
-#update_data = data_base_work.initial_payment_getData()
+    with col2:
+        components.html(map_html, width=700, height=500)
 
