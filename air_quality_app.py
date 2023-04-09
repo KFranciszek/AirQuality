@@ -17,6 +17,9 @@ st.set_page_config(layout="wide")
 st.title("Air Quality App")
 main_container = st.container()
 col1, col2 = main_container.columns([1, 1])
+# create 3 columns for the sidebar to button
+col3, col4, col5 = st.sidebar.columns(3)
+
 
 with st.sidebar:
     st.sidebar.title("Data filtering")
@@ -67,6 +70,11 @@ def station_filtr(stations):
                         min_string  =f"Minimum value: {min_value:.2f} at {min_date} "
                         st.write(avg_string,"-",max_string,"-",min_string)
                         show_chart=st.line_chart(df,x="Date",y="Value")
+                    with col5:
+                        csv=df.to_csv()
+                        dowland_csv = col5.download_button(label="Download data CSV",data=csv,file_name='large_df.csv',mime='text/csv',)
+
+
                 except ValueError as ve:
                  print("Error:", ve)
 
@@ -96,25 +104,23 @@ if not city_name:
 else:
     None
 
+
+
+# add a button to each column
+update_button = col4.button("Update data")
+show_map_button = col3.button('Show data on map')
+
+
 #CITY MAP#
-city_map_show = st.sidebar.button("Show city map")
-if city_map_show:
-    # Read the content of the 'map.html' file
-    with open("map.html", "r", encoding="utf-8") as file:
-        map_html = file.read()
-    # Display the HTML content of the map
-    with col2:
-        components.html(map_html, width=700, height=500)
+# Read the content of the 'map.html' file
+with open("map.html", "r", encoding="utf-8") as file:
+    map_html = file.read()
+# Display the HTML content of the map
+with col2:
+    components.html(map_html, width=700, height=500)
 
-#Update data butto-def and downolad it#
-update_button= st.sidebar.button("Update data")
-
+#Update data butto-def#
 if update_button:
     data_base_work.initial_payment_getData()
     st.sidebar.success("Data updated successfully!")
-
-
-
-
-
 
