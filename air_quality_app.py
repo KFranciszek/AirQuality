@@ -3,6 +3,7 @@ import stations_map
 import streamlit as st
 from station_info import StationInfo
 from stations_map import StationsMap
+from Initial_data_load_db import DataBaseWork
 import pandas
 import streamlit.components.v1 as components
 from unidecode import unidecode
@@ -11,6 +12,7 @@ import datetime
 
 station_info = StationInfo()
 stations_map = StationsMap()
+data_base_work = DataBaseWork()
 st.set_page_config(layout="wide")
 st.title("Air Quality App")
 main_container = st.container()
@@ -43,28 +45,33 @@ def station_filtr(stations):
                 delta = pd.Timedelta(days=date_range)
                 result_date = current_date - delta
                 result_date_str = result_date.strftime('%Y-%m-%d %H:%M:%S')
-                df=df.loc[df['Date'] > result_date_str]
+                try:
+                    df=df.loc[df['Date'] > result_date_str]
+                    with col1:
+                        st.write("Tabel data.")
+                        st.dataframe(df,width=500, height=800)
+                    with col2:
+                        st.write("Charts and mapa data.")
+                        average_value = df['Value'].mean()
+                        max_value_index =df['Value'].idxmax()
+                        min_value_index =df['Value'].idxmin()
+                        # Get the max and min values
+                        max_value = df.loc[max_value_index, 'Value']
+                        min_value = df.loc[min_value_index, 'Value']
+                        # Get the corresponding dates for the max and min values
+                        max_date = df.loc[max_value_index, 'Date']
+                        min_date = df.loc[min_value_index, 'Date']
+                        #Formating data analys
+                        avg_string = f"Average value is: {average_value:.2f}"
+                        max_string =  f"Maxium value: {max_value:.2f} at {max_date} "
+                        min_string  =f"Minimum value: {min_value:.2f} at {min_date} "
+                        st.write(avg_string,"-",max_string,"-",min_string)
+                        show_chart=st.line_chart(df,x="Date",y="Value")
+                except ValueError as ve:
+                 print("Error:", ve)
 
-                with col1:
-                    st.write("Tabel data.")
-                    st.dataframe(df,width=500, height=800)
-                with col2:
-                    st.write("Charts and mapa data.")
-                    average_value = df['Value'].mean()
-                    max_value_index =df['Value'].idxmax()
-                    min_value_index =df['Value'].idxmin()
-                    # Get the max and min values
-                    max_value = df.loc[max_value_index, 'Value']
-                    min_value = df.loc[min_value_index, 'Value']
-                    # Get the corresponding dates for the max and min values
-                    max_date = df.loc[max_value_index, 'Date']
-                    min_date = df.loc[min_value_index, 'Date']
-                    #Formating data analys
-                    avg_string = f"Average value is: {average_value:.2f}"
-                    max_string =  f"Maxium value: {max_value:.2f} at {max_date} "
-                    min_string  =f"Minimum value: {min_value:.2f} at {min_date} "
-                    st.write(avg_string,"-",max_string,"-",min_string)
-                    show_chart=st.line_chart(df,x="Date",y="Value")
+
+
 
 
 
@@ -98,4 +105,16 @@ if city_map_show:
     # Display the HTML content of the map
     with col2:
         components.html(map_html, width=700, height=500)
+
+#Update data butto-def and downolad it#
+update_button= st.sidebar.button("Update data")
+
+if update_button:
+    data_base_work.initial_payment_getData()
+    st.sidebar.success("Data updated successfully!")
+
+
+
+
+
 

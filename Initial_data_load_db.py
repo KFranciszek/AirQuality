@@ -112,7 +112,7 @@ class DataBaseWork():
             c.close()
             conn.close()
 
-
+#BUG: usuwanie NULL/NONE Value
     def initial_payment_getData(self):
         #Initial load data from API, sensors data table.
         try:
@@ -127,11 +127,15 @@ class DataBaseWork():
         ids_sensors = [s['id'] for lst in sensors_data for s in lst]
         api_url = 'https://api.gios.gov.pl/pjp-api/rest/data/getData/'
         sensors_data = [{'sensor_id':i,'data':requests.get(api_url + str(i)).json()} for i in ids_sensors]
+       #BUG
+        sensors_data_null = []
         for dictionary in sensors_data:
-            if dictionary.get("data").get("values") is not None:
+            if dictionary.get("data").get("values") is  None:
                 for value in dictionary["data"]["values"]:
                     if value.get("value") is None:
+                       sensors_data_null.append(dictionary)
                        sensors_data.remove(dictionary)
+                       #print(sensors_data.remove(dictionary))
         conn = sqlite3.connect('airquality_db_test2.db')
         c = conn.cursor()
         inserted_rows_count = 0
@@ -140,15 +144,17 @@ class DataBaseWork():
                 sensor_id = i['sensor_id']
                 data = i['data']
                 key = data['key']
-                for value in data['values']:
-                    date = value['date']
-                    value = value['value']
-                    c.execute("INSERT OR IGNORE INTO sensors_data (sensor_id, key,date, value) VALUES (?, ?, ?,?)",
-                              (sensor_id, key,date, value))
-                    conn.commit()
-                    inserted_rows_count+=1
-                else:
-                    None
+                if data['values'] is not None:
+                    for value in data['values']:
+                        date = value['date']
+                        value = value['value']
+                        # Only insert rows with non-null values
+                        if value is not None:
+                            c.execute(
+                                "INSERT OR IGNORE INTO sensors_data (sensor_id, key, date, value) VALUES (?, ?, ?, ?)",
+                                (sensor_id, key, date, value))
+                            conn.commit()
+                            inserted_rows_count += 1
             except sqlite3.Error as e:
                 print("An error occurred while connecting to the database:", e)
 
@@ -158,6 +164,6 @@ class DataBaseWork():
 
 
 
-DataBaseWork_db= DataBaseWork()
+#DataBaseWork_db= DataBaseWork()
 #DataBaseWork_db_c = DataBaseWork_db.db_create()
-DataBaseWork_db_c = DataBaseWork_db.initial_payment_sensors()
+#DataBaseWork_db_c = DataBaseWork_db.initial_payment_getData()
