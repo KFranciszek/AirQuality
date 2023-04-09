@@ -7,6 +7,7 @@ import pandas
 import streamlit.components.v1 as components
 from unidecode import unidecode
 import  matplotlib as plt
+import datetime
 
 station_info = StationInfo()
 stations_map = StationsMap()
@@ -36,6 +37,14 @@ def station_filtr(stations):
                 df = pd.DataFrame(parameters_data, columns=['Kolumna 1', 'Kolumna 2', 'Kolumna 3','Kolumna 4'])
                 df = df.loc[:, ['Kolumna 3', 'Kolumna 4']].rename(
                     columns={'Kolumna 3': 'Date', 'Kolumna 4': 'Value'})
+                date_range_list = (3, 7, 14, 30, 60, 90, 180, 365)
+                date_range = st.sidebar.selectbox("Chose date raneg", date_range_list)
+                current_date = pd.Timestamp.now()
+                delta = pd.Timedelta(days=date_range)
+                result_date = current_date - delta
+                result_date_str = result_date.strftime('%Y-%m-%d %H:%M:%S')
+                df=df.loc[df['Date'] > result_date_str]
+
                 with col1:
                     st.write("Tabel data.")
                     st.dataframe(df,width=500, height=800)
