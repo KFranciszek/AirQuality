@@ -41,6 +41,20 @@ def station_filtr(stations):
                     st.dataframe(df,width=500, height=800)
                 with col2:
                     st.write("Charts and mapa data.")
+                    average_value = df['Value'].mean()
+                    max_value_index =df['Value'].idxmax()
+                    min_value_index =df['Value'].idxmin()
+                    # Get the max and min values
+                    max_value = df.loc[max_value_index, 'Value']
+                    min_value = df.loc[min_value_index, 'Value']
+                    # Get the corresponding dates for the max and min values
+                    max_date = df.loc[max_value_index, 'Date']
+                    min_date = df.loc[min_value_index, 'Date']
+                    #Formating data analys
+                    avg_string = f"Average value is: {average_value:.2f}"
+                    max_string =  f"Maxium value: {max_value:.2f} at {max_date} "
+                    min_string  =f"Minimum value: {min_value:.2f} at {min_date} "
+                    st.write(avg_string,"-",max_string,"-",min_string)
                     show_chart=st.line_chart(df,x="Date",y="Value")
 
 
