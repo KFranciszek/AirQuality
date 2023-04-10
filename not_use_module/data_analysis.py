@@ -5,27 +5,28 @@ class DataaAnalysis():
 #Function that returns the average for a specified sensor from a database
     def average_data_db(self, sensor_id):
         try:
-            conn = sqlite3.connect('airquality_db.db')
+            conn = sqlite3.connect('airquality_db_test2.db')
             c = conn.cursor()
             c.execute(f'''Select AVG(value) from sensors_data where sensor_id = "{sensor_id}"''')
             search_result = c.fetchone()[0]
             conn.commit()
             c.close()
             conn.close()
-            return round(search_result, 3)
+            avg=round(search_result, 3)
         except sqlite3.Error as e:
             print("An error occurred while connecting to the database:", e)
             return None
         except ValueError as e:
             print("Invalid input: ", e)
             return None
+        return avg
 
 
 
     def smallest_largest_data_db(self, sensor_id):
 #Function that returns  max and min value for a specified sensor from a database
         try:
-            conn = sqlite3.connect('airquality_db.db')
+            conn = sqlite3.connect('airquality_db_test2.db')
             c = conn.cursor()
             c.execute(f'''Select max(value), min(value) from sensors_data where sensor_id = "{sensor_id}"''')
             search_result = c.fetchone()[:]
