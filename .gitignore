@@ -6,3 +6,4 @@
 .gitignore
 data_analysis.py
 /not_use_module
+/not_use_module/
