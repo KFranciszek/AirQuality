@@ -11,7 +11,7 @@ from geopy.distance import  geodesic
 class StationsMap():
     def show_station_on_map(self):
         try:
-            conn = sqlite3.connect('airquality_db.db')
+            conn = sqlite3.connect('airquality_db_test2.db.db')
             c = conn.cursor()
             c.execute(f'''SELECT station_name,gegr_lat,gegr_lon from stations''')
             search_result = c.fetchall()
@@ -42,7 +42,7 @@ class StationsMap():
         try:
             conn = sqlite3.connect('airquality_db_test2.db')
             c = conn.cursor()
-            c.execute(f'''SELECT gegr_lat,gegr_lon,station_name from stations''')
+            c.execute(f'''SELECT gegr_lat,gegr_lon,station_name,stations_id,city_name from stations''')
             search_result = c.fetchall()
             conn.commit()
             c.close()
@@ -59,12 +59,12 @@ class StationsMap():
                 #print(distance)
                 locations.append(distance.kilometers)
 
+            result_km  =[]
             for index, x in enumerate(locations):
                 if x <= distance_point:
-                    print(search_result[index][2], x)
+                    result_km.append(search_result[index][2:5])
+
+
         except TypeError as te:
             print(f"Invalid error: {te}")
-
-stations_map = StationsMap()
-locations = stations_map.show_station_on_map_by_distance("Poznań",50)
-
+        return result_km
