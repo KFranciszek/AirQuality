@@ -6,8 +6,6 @@ from geopy import geocoders
 from geopy.geocoders import Nominatim
 from geopy.distance import  geodesic
 
-
-
 class StationsMap():
     def show_station_on_map(self):
         try:
