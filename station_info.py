@@ -20,8 +20,8 @@ class StationInfo():
         search_result = c.fetchall()
         conn.commit()
         conn.close()
-        if not search_result:
-            raise ValueError("No station found for the given city name.")
+        #if not :
+        #    raise ValueError("No station found for the given city name.")
         return search_result
 
     def station_list_by_city_all_db(self):
