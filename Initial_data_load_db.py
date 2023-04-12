@@ -6,7 +6,6 @@ from config import db_name
 from  api_conect import api_connecting
 #Module that creates tables for the application and runs their initial feed from the API
 
-
 class DataBaseWork:
 
     def connect_db(self):
@@ -153,5 +152,5 @@ class DataBaseWork:
         conn.close()
         print(f"Total rows inserted: {inserted_rows_count}")
 
-db_work = DataBaseWork()
-db_work.initial_payment_getData()
+# db_work = DataBaseWork()
+# db_work.initial_payment_getData()
