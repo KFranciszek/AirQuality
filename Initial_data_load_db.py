@@ -113,5 +113,45 @@ class DataBaseWork:
             c.close()
             conn.close()
 
+   # Initial load data from API, sensors data table.
+    def initial_payment_getData(self):
+        api_url = 'https://api.gios.gov.pl/pjp-api/rest/station/findAll'
+        response = api_connecting(api_url)
+        data = response.json()
+        ids = [station['id'] for station in data]
+        api_url = 'https://api.gios.gov.pl/pjp-api/rest/station/sensors/'
+        sensors_data = [requests.get(api_url + str(i)).json() for i in ids]
+        ids_sensors = [s['id'] for lst in sensors_data for s in lst]
+        api_url = 'https://api.gios.gov.pl/pjp-api/rest/data/getData/'
+        sensors_data = [{'sensor_id': i, 'data': api_connecting(api_url + str(i)).json()} for i in ids_sensors]
+        sensors_data_null = []
+        for dictionary in sensors_data:
+            if dictionary.get("data").get("values") is None:
+                for value in dictionary["data"]["values"]:
+                    if value.get("value") is None:
+                        sensors_data_null.append(dictionary)
+                        sensors_data.remove(dictionary)
+        conn, c = self.connect_db()
+        inserted_rows_count = 0
+        for i in sensors_data:
+            sensor_id = i['sensor_id']
+            data = i['data']
+            key = data['key']
+            if data['values'] is not None:
+                for value in data['values']:
+                    date = value['date']
+                    value = value['value']
+                    # Only insert rows with non-null values
+                    if value is not None:
+                        sql = "INSERT OR IGNORE INTO sensors_data " \
+                              "(sensor_id, key, date, value) VALUES (?, ?, ?, ?)"
+                        values = (sensor_id, key, date, value)
+                        self.execute_sql(conn, c, sql, values)
+                        conn.commit()
+                        inserted_rows_count += 1
+        c.close()
+        conn.close()
+        print(f"Total rows inserted: {inserted_rows_count}")
+
 db_work = DataBaseWork()
-db_work.initial_payment_sensors()
+db_work.initial_payment_getData()
