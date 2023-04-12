@@ -1,169 +1,117 @@
 
-import cmath
 import requests
 import json
 import sqlite3
-
+from config import db_name
+from  api_conect import api_connecting
 #Module that creates tables for the application and runs their initial feed from the API
 
-class DataBaseWork():
-    # Function that creates 3 tables with UNIQUE constraints to prevent duplicates
+
+class DataBaseWork:
+
+    def connect_db(self):
+        db_name
+        conn = sqlite3.connect(db_name)
+        c = conn.cursor()
+        return conn, c
+
+    def execute_sql(self,conn,c,sql,values=None):
+        if values:
+            c.execute(sql, values)
+        else:
+            c.execute(sql)
+
     def db_create(self):
         try:
-            conn = sqlite3.connect('airquality_db_test2.db')
-            c = conn.cursor()
-            c.execute('''CREATE TABLE "sensors" (
-            "sensor_id"	INT,
-            "stations_id"	INT,
-            "param_name"	VARCHAR(255),
-            "param_formula"	VARCHAR(20),
-            "param_code"	VARCHAR(20),
-            "param_id"	INT,
-             UNIQUE(sensor_id,stations_id,param_name,param_formula,param_code,param_id))''')
-            conn.commit()
-            c.execute('''CREATE TABLE "sensors_data" (
-            "sensor_id"	INT,
-            "key"	VARCHAR(20),
-            "date"	datetime,
-            "value"	INT,
-             UNIQUE(sensor_id, key, date, value))''')
-            conn.commit()
-            c.execute('''CREATE TABLE "stations" (
-            "stations_id"	INT,
-            "station_name"	VARCHAR(255),
-            "gegr_lat"	VARCHAR(20),
-            "gegr_lon"	VARCHAR(20),
-            "city_id"	INT,
-            "city_name"	VARCHAR(255),
-            "commune_name"	VARCHAR(255),
-            "district_name"	VARCHAR(255),
-            "province_name"	VARCHAR(255),
-            "address_street" VARCHAR(255),
-             UNIQUE(stations_id,station_name,gegr_lat,gegr_lon,city_id,city_name,commune_name,district_name,province_name,address_street))''')
-            conn.commit()
-            c.close()
-            conn.close()
+            db_name
+            #connect_db()
+            conn, c = self.connect_db()
+            sql1 = '''CREATE TABLE "sensors" (
+                "sensor_id"	INT,
+                "stations_id"	INT,
+                "param_name"	VARCHAR(255),
+                "param_formula"	VARCHAR(20),
+                "param_code"	VARCHAR(20),
+                "param_id"	INT,
+                 UNIQUE(sensor_id,stations_id,param_name,param_formula,param_code,param_id))'''
+            sql2 = '''CREATE TABLE "sensors_data" (
+                "sensor_id"	INT,
+                "key"	VARCHAR(20),
+                "date"	datetime,
+                "value"	INT,
+                 UNIQUE(sensor_id, key, date, value))'''
+            sql3 = '''CREATE TABLE "stations" (
+                "stations_id"	INT,
+                "station_name"	VARCHAR(255),
+                "gegr_lat"	VARCHAR(20),
+                "gegr_lon"	VARCHAR(20),
+                "city_id"	INT,
+                "city_name"	VARCHAR(255),
+                "commune_name"	VARCHAR(255),
+                "district_name"	VARCHAR(255),
+                "province_name"	VARCHAR(255),
+                "address_street" VARCHAR(255),
+                 UNIQUE(stations_id,station_name,gegr_lat,gegr_lon,city_id,city_name,
+                 commune_name,district_name,province_name,address_street))'''
+            sql = [sql1,sql2,sql3]
+            for i in sql:
+                self.execute_sql(conn, c, i)
+                conn.commit()
         except (sqlite3.OperationalError,sqlite3.Error,) as e:
             print("db error:",e)
 
+
     # Function that inserts data into the 'stations' table with INSERT OR IGNORE to avoid duplicates
     def initial_payment_stations(self):
-        try:
-            api_url = 'https://api.gios.gov.pl/pjp-api/rest/station/findAll'
-            response = requests.get(api_url)
-            data = response.json()
-        except requests.exceptions.RequestException as e:
-            print("An error occurred while making the request:", e)
+        api_url = 'https://api.gios.gov.pl/pjp-api/rest/station/findAll'
+        response = api_connecting(api_url)
+        data = response.json()
+        conn, c = self.connect_db()
+        for station in data:
+            city = station['city']
+            commune = city['commune']
+            sql = '''INSERT OR IGNORE INTO stations
+                         (stations_id, station_name, gegr_lat, gegr_lon, city_id,
+                          city_name, commune_name, district_name,
+                          province_name, address_street)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+            values = (station['id'], station['stationName'], station['gegrLat'],
+                      station['gegrLon'], city['id'], city['name'],
+                      commune['communeName'], commune['districtName'],
+                      commune['provinceName'], station['addressStreet'])
+            self.execute_sql(conn, c, sql, values)
+        conn.commit()
+        c.close()
+        conn.close()
 
-        try:
-            conn = sqlite3.connect('airquality_db_test2.db',timeout=1500)
-            c = conn.cursor()
-            for station in data:
-                city = station['city']
-                commune = city['commune']
-                c.execute('''INSERT OR IGNORE INTO stations
-                             (stations_id, station_name, gegr_lat, gegr_lon, city_id,
-                              city_name, commune_name, district_name,
-                              province_name, address_street)
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                          (station['id'], station['stationName'], station['gegrLat'],
-                           station['gegrLon'], city['id'], city['name'],
-                           commune['communeName'], commune['districtName'],
-                           commune['provinceName'], station['addressStreet']))
-            conn.commit()
-            c.close()
-            conn.close()
 
-        except sqlite3.Error as e:
-            print("An error occurred while connecting to the database:", e)
+        # Function that inserts data into the 'sensors' table with INSERT OR IGNORE to avoid duplicates
 
-    # Function that inserts data into the 'sensors' table with INSERT OR IGNORE to avoid duplicates
     def initial_payment_sensors(self):
-        try:
-            api_url = 'https://api.gios.gov.pl/pjp-api/rest/station/findAll'
-            response = requests.get(api_url)
-        except requests.exceptions.RequestException as e:
-            print("An error occurred while making the request:", e)
+        api_url = 'https://api.gios.gov.pl/pjp-api/rest/station/findAll'
+        response = api_connecting(api_url)
         data = response.json()
         ids = [station['id'] for station in data]
         sensors_data = []
         for i in ids:
             api_url = 'https://api.gios.gov.pl/pjp-api/rest/station/sensors/'
             api_url = api_url + str(i)
-            response = requests.get(api_url)
+            response = api_connecting(api_url)
             data = response.json()
             sensors_data.append(data)
-            conn = sqlite3.connect('airquality_db_test2.db')
-            c = conn.cursor()
+            conn, c = self.connect_db()
             for sensor in data:
-                try:
-                    c.execute('''INSERT OR IGNORE INTO sensors
-                                 (sensor_id,stations_id, param_name, param_formula, param_code,
-                                  param_id)
-                                 VALUES (?,?, ?, ?, ?,?)''',
-                              (sensor['id'],sensor['stationId'], sensor['param']['paramName'],
+                sql = '''INSERT OR IGNORE INTO sensors
+                                  (sensor_id,stations_id, param_name, param_formula, param_code,
+                                   param_id)
+                                  VALUES (?,?, ?, ?, ?,?)'''
+                values =  (sensor['id'], sensor['stationId'], sensor['param']['paramName'],
                                sensor['param']['paramFormula'], sensor['param']['paramCode'], sensor['param']['idParam']
-                                       ))
-
-                    conn.commit()
-
-                except sqlite3.Error as e:
-                    print("An error occurred while connecting to the database:", e)
+                               )
+                self.execute_sql(conn, c, sql, values)
+            conn.commit()
             c.close()
             conn.close()
 
-#BUG: usuwanie NULL/NONE Value
-    def initial_payment_getData(self):
-        #Initial load data from API, sensors data table.
-        try:
-            api_url = 'https://api.gios.gov.pl/pjp-api/rest/station/findAll'
-            response = requests.get(api_url)
-        except requests.exceptions.RequestException as e:
-            print("An error occurred while making the request:", e)
-        data = response.json()
-        ids = [station['id'] for station in data]
-        api_url = 'https://api.gios.gov.pl/pjp-api/rest/station/sensors/'
-        sensors_data = [requests.get(api_url + str(i)).json() for i in ids]
-        ids_sensors = [s['id'] for lst in sensors_data for s in lst]
-        api_url = 'https://api.gios.gov.pl/pjp-api/rest/data/getData/'
-        sensors_data = [{'sensor_id':i,'data':requests.get(api_url + str(i)).json()} for i in ids_sensors]
-       #BUG
-        sensors_data_null = []
-        for dictionary in sensors_data:
-            if dictionary.get("data").get("values") is  None:
-                for value in dictionary["data"]["values"]:
-                    if value.get("value") is None:
-                       sensors_data_null.append(dictionary)
-                       sensors_data.remove(dictionary)
-                       #print(sensors_data.remove(dictionary))
-        conn = sqlite3.connect('airquality_db_test2.db')
-        c = conn.cursor()
-        inserted_rows_count = 0
-        for i in sensors_data:
-            try:
-                sensor_id = i['sensor_id']
-                data = i['data']
-                key = data['key']
-                if data['values'] is not None:
-                    for value in data['values']:
-                        date = value['date']
-                        value = value['value']
-                        # Only insert rows with non-null values
-                        if value is not None:
-                            c.execute(
-                                "INSERT OR IGNORE INTO sensors_data (sensor_id, key, date, value) VALUES (?, ?, ?, ?)",
-                                (sensor_id, key, date, value))
-                            conn.commit()
-                            inserted_rows_count += 1
-            except sqlite3.Error as e:
-                print("An error occurred while connecting to the database:", e)
-
-        c.close()
-        conn.close()
-        print(f"Total rows inserted: {inserted_rows_count}")
-
-
-
-#DataBaseWork_db= DataBaseWork()
-#DataBaseWork_db_c = DataBaseWork_db.db_create()
-#DataBaseWork_db_c = DataBaseWork_db.initial_payment_getData()
+db_work = DataBaseWork()
+db_work.initial_payment_sensors()
