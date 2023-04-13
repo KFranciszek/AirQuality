@@ -6,21 +6,20 @@ from geopy import geocoders
 from geopy.geocoders import Nominatim
 from geopy.distance import  geodesic
 
+from Initial_data_load_db import DataBaseWork
+
+
 class StationsMap():
     def show_station_on_map(self):
-        try:
-            conn = sqlite3.connect('airquality_db_test2.db.db')
-            c = conn.cursor()
-            c.execute(f'''SELECT station_name,gegr_lat,gegr_lon from stations''')
-            search_result = c.fetchall()
-            conn.commit()
-            c.close()
-            conn.close()
-        except sqlite3.Error as e:
-            print("An error occurred while connecting to the database:", e)
-
+        data_base_work = DataBaseWork()
+        conn, c = data_base_work.connect_db()
+        sql = 'SELECT station_name,gegr_lat,gegr_lon from stations'
+        data_base_work.execute_sql(conn, c, sql)
+        search_result = c.fetchall()
+        conn.commit()
+        conn.close()
         latitude, longitude = float(search_result[0][1]), float(search_result[0][2])
-        zoom_level = 10  # Adjust the zoom level according to your preference
+        zoom_level = 6  # Adjust the zoom level according to your preference
         map = folium.Map(location=(latitude, longitude), zoom_start=zoom_level)
         for point in search_result:
             name,lat,lon = point
@@ -36,33 +35,24 @@ class StationsMap():
             location_check=(location_check.latitude, location_check.longitude)
         except (ValueError,AttributeError) as e:
             print(f"Invalid error: {e}")
-
-        try:
-            conn = sqlite3.connect('airquality_db_test2.db')
-            c = conn.cursor()
-            c.execute(f'''SELECT gegr_lat,gegr_lon,station_name,stations_id,city_name from stations''')
-            search_result = c.fetchall()
-            conn.commit()
-            c.close()
-            conn.close()
-        except (sqlite3.OperationalError, sqlite3.Error,) as e:
-            print("db error:", e)
-
+        data_base_work = DataBaseWork()
+        conn, c = data_base_work.connect_db()
+        sql = 'SELECT gegr_lat,gegr_lon,station_name,stations_id,city_name from stations'
+        data_base_work.execute_sql(conn, c, sql)
+        search_result = c.fetchall()
+        conn.commit()
+        conn.close()
         try:
             point1 = location_check
             locations = []
             for i in search_result:
                 point2 = (i[0],i[1])
                 distance = geodesic(point1,point2)
-                #print(distance)
                 locations.append(distance.kilometers)
-
             result_km  =[]
             for index, x in enumerate(locations):
                 if x <= distance_point:
                     result_km.append(search_result[index][2:5])
-
-
         except TypeError as te:
             print(f"Invalid error: {te}")
         return result_km

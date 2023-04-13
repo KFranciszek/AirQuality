@@ -6,6 +6,7 @@ import streamlit.components.v1 as components
 
 from unidecode import unidecode
 import pandas as pd
+import numpy as np
 
 from config import date_range_list,km_list
 from station_info import StationInfo
@@ -65,7 +66,12 @@ def sensor_filtr(sensors_mesure):
                     max_string = f"Maxium value: {max_value:.2f} at {max_date} "
                     min_string = f"Minimum value: {min_value:.2f} at {min_date} "
                     st.write(avg_string, "-", max_string, "-", min_string)
-                    show_chart = st.line_chart(df, x="Date", y="Value")
+                    x = np.arange(len(df))
+                    y = df["Value"]
+                    coefficients = np.polyfit(x, y, 1)
+                    trend_line = np.poly1d(coefficients)
+                    df["Trend"] = trend_line(x)
+                    show_chart=st.line_chart(df.set_index("Date"))
                 with col5:
                     csv = df.to_csv()
                     dowland_csv = col5.download_button(label="Download data CSV",
@@ -136,6 +142,3 @@ show_map_button = col3.button('Show data on map')
 if update_button:
     data_base_work.initial_payment_getData()
     st.sidebar.success("Data updated successfully!")
-
-
-
