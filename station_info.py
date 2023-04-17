@@ -1,8 +1,5 @@
-#The code is vulnerable to SQL injection attacks because it uses f-strings to construct SQL queries. Instead, use parameterized queries.
-#The connection and cursor handling can be improved by using context managers (the with statement). This ensures that resources are released properly, even if an exception occurs.
-#There is code repetition in each method for connecting to the database, executing queries, and handling errors. This can be refactored into a separate method to avoid repetition and make the code more maintainable.
 
-#Module for retrieving station and sensor data from SQLite database.
+
 
 
 import sqlite3
@@ -11,8 +8,21 @@ from config import db_name
 
 
 class StationInfo():
-#This code def retrieves a list of station names and addresses from an SQLite database based on a specified city name.
+    """
+
+  A class for handling station information, the information is retrieved from a database.
+
+    """
+
     def station_list_by_city_user_db(self,city_name):
+
+        """
+
+        This code def retrieves a list of station names and addresses
+        from an SQLite database based on a specified city name.
+
+        """
+
         data_base_work = DataBaseWork()
         conn, c = data_base_work.connect_db()
         sql = "SELECT city_name,address_street,stations_id from stations where city_name = ?"
@@ -20,12 +30,12 @@ class StationInfo():
         search_result = c.fetchall()
         conn.commit()
         conn.close()
-        #if not :
-        #    raise ValueError("No station found for the given city name.")
         return search_result
 
     def station_list_by_city_all_db(self):
-        # This code def retrieves  list of all city from db.
+
+        """This code  retrieves list of all city from db."""
+
         data_base_work = DataBaseWork()
         conn, c = data_base_work.connect_db()
         sql = 'SELECT DISTINCT(city_name) FROM stations'
@@ -37,7 +47,9 @@ class StationInfo():
         return search_result
 
     def sensors_list_by_station_all_db(self,stations_id):
-# This code def retrieves  all sensors by chose  stations_id from db.
+
+        """This code def retrieves  all sensors by chose stations_id from db"""
+
         data_base_work = DataBaseWork()
         conn, c = data_base_work.connect_db()
         sql = "Select * from sensors where stations_id = ?"
@@ -50,7 +62,10 @@ class StationInfo():
         return search_result
 
     def sensors_data_by_sensors_db(self,sensor_id):
- # This code def retrieves  all sensors_data  by chose  sensor_id from db
+
+
+        """This code def retrieves  all sensors_data  by chose  sensor_id from db"""
+
         data_base_work = DataBaseWork()
         conn, c = data_base_work.connect_db()
         sql = "Select * from sensors_data where sensor_id = ?"
@@ -59,12 +74,11 @@ class StationInfo():
         conn.commit()
         conn.close()
         if not search_result:
-            raise ValueError("Sensors data list empty error.")
+            print("No data in this sensor")
         return search_result
 
 
     def sensors_data_by_stations_db(self,stations_id):
-# Function that hits the database in join up to 3 tables and retrieves sensor data based on station id
         data_base_work = DataBaseWork()
         conn, c = data_base_work.connect_db()
         sql = """select * from sensors_data as sd
@@ -76,5 +90,5 @@ class StationInfo():
         conn.commit()
         conn.close()
         if not search_result:
-            raise ValueError("Sensors data list empty error.")
+            print("No data in this sensor")
         return search_result

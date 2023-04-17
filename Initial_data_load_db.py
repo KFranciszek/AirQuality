@@ -4,23 +4,43 @@ import json
 import sqlite3
 from config import db_name
 from  api_conect import api_connecting
-#Module that creates tables for the application and runs their initial feed from the API
 
 class DataBaseWork:
 
+    """
+
+    A collection of functions that work with the database from establishing a connection,
+    executing a query on the database to a series of actions like initial load
+
+    """
+
     def connect_db(self):
+        """
+
+        Establishing a connection to the database
+
+        """
         db_name
         conn = sqlite3.connect(db_name)
         c = conn.cursor()
         return conn, c
 
     def execute_sql(self,conn,c,sql,values=None):
+
+        """
+
+        Executing a query on the database
+
+        """
         if values:
             c.execute(sql, values)
         else:
             c.execute(sql)
 
     def db_create(self):
+
+        """Creation of 3 specific databases"""
+
         try:
             db_name
             #connect_db()
@@ -60,8 +80,10 @@ class DataBaseWork:
             print("db error:",e)
 
 
-    # Function that inserts data into the 'stations' table with INSERT OR IGNORE to avoid duplicates
     def initial_payment_stations(self):
+
+        """Call station/findAll API fetch data and flip to station table"""
+
         api_url = 'https://api.gios.gov.pl/pjp-api/rest/station/findAll'
         response = api_connecting(api_url)
         data = response.json()
@@ -84,9 +106,13 @@ class DataBaseWork:
         conn.close()
 
 
-        # Function that inserts data into the 'sensors' table with INSERT OR IGNORE to avoid duplicates
 
     def initial_payment_sensors(self):
+
+        """Call station/findAll API to  get all stationsID,
+        next  use stationID to  call station/sensors/ and fetch data to sensors tabel"""
+
+
         api_url = 'https://api.gios.gov.pl/pjp-api/rest/station/findAll'
         response = api_connecting(api_url)
         data = response.json()
@@ -112,8 +138,11 @@ class DataBaseWork:
             c.close()
             conn.close()
 
-   # Initial load data from API, sensors data table.
     def initial_payment_getData(self):
+
+        """Call station/findAll API  to  get all stationsID,
+        next  use stationID to  call station/sensors/  get sensorsID  next call data/getData/ using sensordID and fetch data to sensors_data tabel"""
+
         api_url = 'https://api.gios.gov.pl/pjp-api/rest/station/findAll'
         response = api_connecting(api_url)
         data = response.json()
@@ -151,6 +180,3 @@ class DataBaseWork:
         c.close()
         conn.close()
         print(f"Total rows inserted: {inserted_rows_count}")
-
-# db_work = DataBaseWork()
-# db_work.initial_payment_getData()

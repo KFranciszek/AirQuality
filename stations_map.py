@@ -10,7 +10,26 @@ from Initial_data_load_db import DataBaseWork
 
 
 class StationsMap():
+
+    """
+
+    A class that groups together methods related to displaying
+    a map and calculating the distance from a given point and, based on that,
+    pulling up the nearest stations. The class uses the bilibrary of folium and geopy
+
+    """
+
     def show_station_on_map(self):
+
+        """
+
+        The method extracts the bearings of all stations from the base and,
+        using the folium library, creates a map by placing pins at the station location.
+
+        """
+
+
+
         data_base_work = DataBaseWork()
         conn, c = data_base_work.connect_db()
         sql = 'SELECT station_name,gegr_lat,gegr_lon from stations'
@@ -29,6 +48,14 @@ class StationsMap():
         map.save('map.html')
 
     def show_station_on_map_by_distance(self, location,distance_point):
+
+        """
+
+            A method that, based on a given point on the map and a range of kilometers,
+            shows stations within that range
+
+        """
+
         try:
             geolocator = Nominatim(user_agent="myGeocoder")
             location_check=geolocator.geocode(location)
