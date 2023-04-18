@@ -13,6 +13,7 @@ from station_info import StationInfo
 from stations_map import StationsMap
 from Initial_data_load_db import DataBaseWork
 
+
 station_info = StationInfo()
 stations_map = StationsMap()
 data_base_work = DataBaseWork()
@@ -36,49 +37,56 @@ def sensor_filtr(sensors_mesure):
             selected_parameter_index = parameters.index(selected_parameters)
             parameters_id = sensors_mesure[selected_parameter_index][0]
             parameters_data = station_info.sensors_data_by_sensors_db(parameters_id)
-            df = pd.DataFrame(parameters_data,
-                              columns=['Kolumna 1', 'Kolumna 2', 'Kolumna 3', 'Kolumna 4'])
-            df = df.loc[:, ['Kolumna 3', 'Kolumna 4']].rename(
-                columns={'Kolumna 3': 'Date', 'Kolumna 4': 'Value'})
-            date_range = st.sidebar.selectbox("Chose date raneg", date_range_list)
-            current_date = pd.Timestamp.now()
-            delta = pd.Timedelta(days=date_range)
-            result_date = current_date - delta
-            result_date_str = result_date.strftime('%Y-%m-%d %H:%M:%S')
-            try:
-                df = df.loc[df['Date'] > result_date_str]
-                with col1:
-                    st.write("Tabel data.")
-                    st.dataframe(df, width=500, height=800)
-                with col2:
-                    st.write("Charts and mapa data.")
-                    average_value = df['Value'].mean()
-                    max_value_index = df['Value'].idxmax()
-                    min_value_index = df['Value'].idxmin()
-                    # Get the max and min values
-                    max_value = df.loc[max_value_index, 'Value']
-                    min_value = df.loc[min_value_index, 'Value']
-                    # Get the corresponding dates for the max and min values
-                    max_date = df.loc[max_value_index, 'Date']
-                    min_date = df.loc[min_value_index, 'Date']
-                    # Formating data analys
-                    avg_string = f"Average value is: {average_value:.2f}"
-                    max_string = f"Maxium value: {max_value:.2f} at {max_date} "
-                    min_string = f"Minimum value: {min_value:.2f} at {min_date} "
-                    st.write(avg_string, "-", max_string, "-", min_string)
-                    x = np.arange(len(df))
-                    y = df["Value"]
-                    coefficients = np.polyfit(x, y, 1)
-                    trend_line = np.poly1d(coefficients)
-                    df["Trend"] = trend_line(x)
-                    show_chart=st.line_chart(df.set_index("Date"))
-                with col5:
-                    csv = df.to_csv()
-                    dowland_csv = col5.download_button(label="Download data CSV",
-                                                       data=csv, file_name='large_df.csv',
-                                                       mime='text/csv', )
-            except (ValueError, TypeError) as error:
-                print("Error:", error)
+            if len(parameters_data) == 0:
+                st.sidebar.write("Not data for this sensor")
+            else:
+                df = pd.DataFrame(parameters_data,
+                                  columns=['Kolumna 1', 'Kolumna 2', 'Kolumna 3', 'Kolumna 4'])
+                df = df.loc[:, ['Kolumna 3', 'Kolumna 4']].rename(
+                    columns={'Kolumna 3': 'Date', 'Kolumna 4': 'Value'})
+                date_range = st.sidebar.selectbox("Chose date raneg", date_range_list)
+                current_date = pd.Timestamp.now()
+                delta = pd.Timedelta(days=date_range)
+                result_date = current_date - delta
+                result_date_str = result_date.strftime('%Y-%m-%d %H:%M:%S')
+                try:
+                    df = df.loc[df['Date'] > result_date_str]
+                    if df.empty:
+                        st.sidebar.write("In this timeframe, no data is available")
+                    else:
+
+                        with col1:
+                            st.write("Tabel data.")
+                            st.dataframe(df, width=500, height=800)
+                        with col2:
+                            st.write("Charts and mapa data.")
+                            average_value = df['Value'].mean()
+                            max_value_index = df['Value'].idxmax()
+                            min_value_index = df['Value'].idxmin()
+                            # Get the max and min values
+                            max_value = df.loc[max_value_index, 'Value']
+                            min_value = df.loc[min_value_index, 'Value']
+                            # Get the corresponding dates for the max and min values
+                            max_date = df.loc[max_value_index, 'Date']
+                            min_date = df.loc[min_value_index, 'Date']
+                            # Formating data analys
+                            avg_string = f"Average value is: {average_value:.2f}"
+                            max_string = f"Maxium value: {max_value:.2f} at {max_date} "
+                            min_string = f"Minimum value: {min_value:.2f} at {min_date} "
+                            st.write(avg_string, "-", max_string, "-", min_string)
+                            x = np.arange(len(df))
+                            y = df["Value"]
+                            coefficients = np.polyfit(x, y, 1)
+                            trend_line = np.poly1d(coefficients)
+                            df["Trend"] = trend_line(x)
+                            show_chart=st.line_chart(df.set_index("Date"))
+                        with col5:
+                            csv = df.to_csv()
+                            dowland_csv = col5.download_button(label="Download data CSV",
+                                                               data=csv, file_name='large_df.csv',
+                                                               mime='text/csv', )
+                except (ValueError, TypeError) as error:
+                        print("Error:", error)
 
 def station_filtr(stations):
     station_list = [i[1] for i in stations]
