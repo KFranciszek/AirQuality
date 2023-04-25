@@ -1,7 +1,4 @@
 
-
-
-
 import sqlite3
 from Initial_data_load_db import DataBaseWork
 from config import db_name
@@ -74,7 +71,7 @@ class StationInfo():
         conn.commit()
         conn.close()
         if not search_result:
-            print("No data in this sensor")
+            print("No data for this sensor")
         return search_result
 
 
@@ -90,5 +87,5 @@ class StationInfo():
         conn.commit()
         conn.close()
         if not search_result:
-            print("No data in this sensor")
+            print("No data for this sensor")
         return search_result
