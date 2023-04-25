@@ -1,4 +1,4 @@
-#Module to freamwork streamlit#
+#Module for framework Streamlit#
 
 
 import streamlit as st
@@ -44,7 +44,7 @@ def sensor_filtr(sensors_mesure):
                                   columns=['Kolumna 1', 'Kolumna 2', 'Kolumna 3', 'Kolumna 4'])
                 df = df.loc[:, ['Kolumna 3', 'Kolumna 4']].rename(
                     columns={'Kolumna 3': 'Date', 'Kolumna 4': 'Value'})
-                date_range = st.sidebar.selectbox("Chose date raneg", date_range_list)
+                date_range = st.sidebar.selectbox("Choose date range", date_range_list)
                 current_date = pd.Timestamp.now()
                 delta = pd.Timedelta(days=date_range)
                 result_date = current_date - delta
@@ -56,10 +56,10 @@ def sensor_filtr(sensors_mesure):
                     else:
 
                         with col1:
-                            st.write("Tabel data.")
+                            st.write("Table data.")
                             st.dataframe(df, width=500, height=800)
                         with col2:
-                            st.write("Charts and mapa data.")
+                            st.write("Charts and map data.")
                             average_value = df['Value'].mean()
                             max_value_index = df['Value'].idxmax()
                             min_value_index = df['Value'].idxmin()
@@ -99,7 +99,7 @@ def station_filtr(stations):
 
 #City choose#
 if radio_value == "Search city":
-    city_name = st.sidebar.text_input("Find stations in a given city")
+    city_name = st.sidebar.text_input("Find stations in the given city")
     stations = station_info.station_list_by_city_user_db(city_name)
     if stations:
         st.sidebar.write("Measuring stations in the city:")
@@ -108,13 +108,13 @@ if radio_value == "Search city":
         if city_name == "":
             pass
         else:
-            st.sidebar.write("City don't appere")
+            st.sidebar.write("City doesn't appear")
 
 #City dropdown#
 if radio_value == "City list":
     city_list = station_info.station_list_by_city_all_db()
     city_list = sorted([i[0] for i in city_list],key=lambda city_list: unidecode(city_list))
-    city_list=st.sidebar.selectbox("Chose city:",city_list)
+    city_list=st.sidebar.selectbox("Choose city:",city_list)
     if city_list  and radio_value == "City list":
         stations = station_info.station_list_by_city_user_db(city_list)
         station_filtr(stations)
@@ -123,7 +123,7 @@ else:
 
 #City by distance#
 if radio_value == "Distance point":
-    point_chose = st.sidebar.text_input("Find stations in a given point")
+    point_chose = st.sidebar.text_input("Find stations in the given point")
     km = st.sidebar.selectbox("Km + ", km_list)
     try:
         station_list_point = stations_map.show_station_on_map_by_distance(point_chose, km)
@@ -146,7 +146,7 @@ with col2:
 #Add a button to each column#
 update_button = col4.button("Update data")
 show_map_button = col3.button('Show data on map')
-#Update data butto-def#
+#Update data button-def#
 if update_button:
     data_base_work.initial_payment_getData()
     st.sidebar.success("Data updated successfully!")
