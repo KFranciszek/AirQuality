@@ -6,7 +6,6 @@ from config import db_name
 from  api_conect import api_connecting
 
 class DataBaseWork:
-
     """
 
     A collection of functions that work with the database from establishing a connection,
@@ -36,6 +35,19 @@ class DataBaseWork:
             c.execute(sql, values)
         else:
             c.execute(sql)
+
+
+    def db_operations(self):
+        db_name
+        with sqlite3.connect(db_name) as coon:
+            conn = sqlite3.connect(db_name)
+            if values:
+                c.execute(sql, values)
+            else:
+                c.execute(sql)
+
+
+
 
     def db_create(self):
 
