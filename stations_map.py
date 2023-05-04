@@ -8,6 +8,7 @@ from geopy.distance import  geodesic
 
 from Initial_data_load_db import DataBaseWork
 
+data_base_work = DataBaseWork()
 
 class StationsMap():
 
@@ -28,15 +29,9 @@ class StationsMap():
 
         """
 
-
-
-        data_base_work = DataBaseWork()
-        conn, c = data_base_work.connect_db()
         sql = 'SELECT station_name,gegr_lat,gegr_lon from stations'
-        data_base_work.execute_sql(conn, c, sql)
-        search_result = c.fetchall()
-        conn.commit()
-        conn.close()
+        search_result=data_base_work.db_operations(sql)
+        return search_result
         latitude, longitude = float(search_result[0][1]), float(search_result[0][2])
         zoom_level = 6  # Adjust the zoom level according to your preference
         map = folium.Map(location=(latitude, longitude), zoom_start=zoom_level)
@@ -62,13 +57,8 @@ class StationsMap():
             location_check=(location_check.latitude, location_check.longitude)
         except (ValueError,AttributeError) as e:
             print(f"Invalid error: {e}")
-        data_base_work = DataBaseWork()
-        conn, c = data_base_work.connect_db()
         sql = 'SELECT gegr_lat,gegr_lon,station_name,stations_id,city_name from stations'
-        data_base_work.execute_sql(conn, c, sql)
-        search_result = c.fetchall()
-        conn.commit()
-        conn.close()
+        search_result=data_base_work.db_operations(sql)
         try:
             point1 = location_check
             locations = []

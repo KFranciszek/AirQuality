@@ -21,9 +21,10 @@ class DataBaseWork:
                     cursor.execute(sql, values)
                 else:
                     cursor.execute(sql)
-                psql = cursor.fetchall()
+                search_result = cursor.fetchall()
         except (sqlite3.OperationalError, sqlite3.Error,) as e:
             print("db error:", e)
+        return search_result
 
 
 
