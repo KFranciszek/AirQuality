@@ -6,7 +6,6 @@ from config import db_name
 from  api_conect import api_connecting
 
 class DataBaseWork:
-
     """
 
     A collection of functions that work with the database from establishing a connection,
@@ -14,71 +13,59 @@ class DataBaseWork:
 
     """
 
-    def connect_db(self):
-        """
+    def db_operations(self, sql, values=None):
+        try:
+            with sqlite3.connect(db_name) as conn:
+                cursor = conn.cursor()
+                if values:
+                    cursor.execute(sql, values)
+                else:
+                    cursor.execute(sql)
+                search_result = cursor.fetchall()
+        except (sqlite3.OperationalError, sqlite3.Error,) as e:
+            print("db error:", e)
+        return search_result
 
-        Establishing a connection to the database
 
-        """
-        db_name
-        conn = sqlite3.connect(db_name)
-        c = conn.cursor()
-        return conn, c
-
-    def execute_sql(self,conn,c,sql,values=None):
-
-        """
-
-        Executing a query on the database
-
-        """
-        if values:
-            c.execute(sql, values)
-        else:
-            c.execute(sql)
 
     def db_create(self):
 
         """Creation of 3 specific databases"""
 
         try:
-            db_name
-            #connect_db()
-            conn, c = self.connect_db()
+
             sql1 = '''CREATE TABLE "sensors" (
-                "sensor_id"	INT,
-                "stations_id"	INT,
-                "param_name"	VARCHAR(255),
-                "param_formula"	VARCHAR(20),
-                "param_code"	VARCHAR(20),
-                "param_id"	INT,
-                 UNIQUE(sensor_id,stations_id,param_name,param_formula,param_code,param_id))'''
+                   "sensor_id"	INT,
+                   "stations_id"	INT,
+                   "param_name"	VARCHAR(255),
+                   "param_formula"	VARCHAR(20),
+                   "param_code"	VARCHAR(20),
+                   "param_id"	INT,
+                    UNIQUE(sensor_id,stations_id,param_name,param_formula,param_code,param_id))'''
             sql2 = '''CREATE TABLE "sensors_data" (
-                "sensor_id"	INT,
-                "key"	VARCHAR(20),
-                "date"	datetime,
-                "value"	INT,
-                 UNIQUE(sensor_id, key, date, value))'''
+                   "sensor_id"	INT,
+                   "key"	VARCHAR(20),
+                   "date"	datetime,
+                   "value"	INT,
+                    UNIQUE(sensor_id, key, date, value))'''
             sql3 = '''CREATE TABLE "stations" (
-                "stations_id"	INT,
-                "station_name"	VARCHAR(255),
-                "gegr_lat"	VARCHAR(20),
-                "gegr_lon"	VARCHAR(20),
-                "city_id"	INT,
-                "city_name"	VARCHAR(255),
-                "commune_name"	VARCHAR(255),
-                "district_name"	VARCHAR(255),
-                "province_name"	VARCHAR(255),
-                "address_street" VARCHAR(255),
-                 UNIQUE(stations_id,station_name,gegr_lat,gegr_lon,city_id,city_name,
-                 commune_name,district_name,province_name,address_street))'''
+                   "stations_id"	INT,
+                   "station_name"	VARCHAR(255),
+                   "gegr_lat"	VARCHAR(20),
+                   "gegr_lon"	VARCHAR(20),
+                   "city_id"	INT,
+                   "city_name"	VARCHAR(255),
+                   "commune_name"	VARCHAR(255),
+                   "district_name"	VARCHAR(255),
+                   "province_name"	VARCHAR(255),
+                   "address_street" VARCHAR(255),
+                    UNIQUE(stations_id,station_name,gegr_lat,gegr_lon,city_id,city_name,
+                    commune_name,district_name,province_name,address_street))'''
             sql = [sql1,sql2,sql3]
             for i in sql:
-                self.execute_sql(conn, c, i)
-                conn.commit()
-        except (sqlite3.OperationalError,sqlite3.Error,) as e:
-            print("db error:",e)
-
+                self.db_operations(i)
+        except (sqlite3.OperationalError, sqlite3.Error,) as e:
+            print("db error:", e)
 
     def initial_payment_stations(self):
 
@@ -87,7 +74,6 @@ class DataBaseWork:
         api_url = 'https://api.gios.gov.pl/pjp-api/rest/station/findAll'
         response = api_connecting(api_url)
         data = response.json()
-        conn, c = self.connect_db()
         for station in data:
             city = station['city']
             commune = city['commune']
@@ -100,10 +86,7 @@ class DataBaseWork:
                       station['gegrLon'], city['id'], city['name'],
                       commune['communeName'], commune['districtName'],
                       commune['provinceName'], station['addressStreet'])
-            self.execute_sql(conn, c, sql, values)
-        conn.commit()
-        c.close()
-        conn.close()
+            self.db_operations(sql,values)
 
 
 
@@ -124,7 +107,6 @@ class DataBaseWork:
             response = api_connecting(api_url)
             data = response.json()
             sensors_data.append(data)
-            conn, c = self.connect_db()
             for sensor in data:
                 sql = '''INSERT OR IGNORE INTO sensors
                                   (sensor_id,stations_id, param_name, param_formula, param_code,
@@ -133,10 +115,8 @@ class DataBaseWork:
                 values =  (sensor['id'], sensor['stationId'], sensor['param']['paramName'],
                                sensor['param']['paramFormula'], sensor['param']['paramCode'], sensor['param']['idParam']
                                )
-                self.execute_sql(conn, c, sql, values)
-            conn.commit()
-            c.close()
-            conn.close()
+                self.db_operations(sql,values)
+
 
     def initial_payment_getData(self):
 
@@ -159,7 +139,6 @@ class DataBaseWork:
                     if value.get("value") is None:
                         sensors_data_null.append(dictionary)
                         sensors_data.remove(dictionary)
-        conn, c = self.connect_db()
         inserted_rows_count = 0
         for i in sensors_data:
             sensor_id = i['sensor_id']
@@ -174,9 +153,7 @@ class DataBaseWork:
                         sql = "INSERT OR IGNORE INTO sensors_data " \
                               "(sensor_id, key, date, value) VALUES (?, ?, ?, ?)"
                         values = (sensor_id, key, date, value)
-                        self.execute_sql(conn, c, sql, values)
-                        conn.commit()
+                        self.db_operations(sql,values)
                         inserted_rows_count += 1
-        c.close()
-        conn.close()
+
         print(f"Total rows inserted: {inserted_rows_count}")
