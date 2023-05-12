@@ -1,8 +1,26 @@
-Podstawowe komponenty
+Air Quality App is an interactive tool designed to provide users with historical and current air quality data.
+Utilizing data from a wide range of air quality monitoring stations, the application presents an in-depth view of air pollution levels across different geographical locations.
 
-1. możliwość pobrania danych pomiarowych z Internetu
-2. możliwość zapisu danych do lokalnej relacyjnej bazy danych
-3. możliwość pobrania danych „historycznych” z bazy
-4. możliwość prezentacji danych w formie wykresu
-5. możliwość prostej analizy danych
+Features
+1.Search for Measurement Stations by City: Users can quickly find air quality data for a specific city by selecting from a list of available cities.
+This feature is particularly useful for users who want to check the air quality of their city or any other city of interest.
 
+2. Determining a Station by a Point on the Map: This feature allows users to select a specific point on an interactive map, and the app will automatically locate the nearest air quality monitoring station.
+This can be especially useful when planning trips to locations where air quality can vary significantly over short distances.
+
+3.Interactive Data Display: The application presents air quality data in an easy-to-read table and graph format.
+Users can dynamically interact with the data, enabling them to better understand the trends and patterns in air pollution levels over time.
+
+4.Calculation of Largest, Smallest Values and Trend: The application provides statistical analysis of the air quality data,
+calculating the maximum, minimum, and trend values. This feature aids in understanding the overall air pollution scenario by providing summarized statistical data.
+
+5.Filtering Data by Selected Parameters: Users can filter the air quality data based on selected parameters, allowing for more tailored and focused analysis.
+
+6.Downloading Data in CSV Format: For offline analysis, the application allows users to download the air quality data in CSV format.
+
+
+The application is built on the Streamlit framework and uses a SQLite database for data management.
+It also leverages several libraries, including folium, requests, json, geopy, pandas, numpy, and unidecode, to handle various tasks such as data analysis, geolocation, and data visualization.
+
+Accessing the Application
+The Air Quality App is hosted online and can be accessed at: https://kfranciszek-airquality-air-quality-app-dwa1ga.streamlit.app/
