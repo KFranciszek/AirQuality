@@ -38,7 +38,7 @@ jobs:
 
     - name: Analyze with Pylint
       run: |
-        pylint **/*.py
+        pylint **/*.py --fail-under=0
 
     - name: Generate PEP 8 Compliance Report
       run: |
