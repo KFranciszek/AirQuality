@@ -26,7 +26,7 @@ jobs:
 
     - name: Type checking with Mypy
       run: |
-        mypy --ignore-missing-imports .
+        mypy --ignore-missing-imports ./**/*.py
 
     - name: Run unit tests
       run: |
@@ -38,8 +38,8 @@ jobs:
 
     - name: Analyze with Pylint
       run: |
-        pylint **/*.py --fail-under=0
+        pylint ./**/*.py --fail-under=0
 
     - name: Generate PEP 8 Compliance Report
       run: |
-        pycodestyle --first **/*.py || true
+        pycodestyle --first ./**/*.py || true
