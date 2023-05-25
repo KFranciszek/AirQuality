@@ -6,6 +6,12 @@ import time
 
 from config import db_name
 from  api_conect import api_connecting
+from log_config import setup_logger
+
+logger = setup_logger(__name__)
+
+
+
 
 class DataBaseWork:
     """
@@ -150,7 +156,7 @@ class DataBaseWork:
         # End time for API calls and calculate elapsed time
         end_time_api = time.time()
         elapsed_time_api = end_time_api - start_time_api
-        print(f"Time elapsed for API calls: {elapsed_time_api} seconds")
+        logger.info(f"Time elapsed for API calls: {elapsed_time_api} seconds")
 
         sensors_data_null = []
         for dictionary in sensors_data:
@@ -184,4 +190,4 @@ class DataBaseWork:
         # End time for DB operation and calculate elapsed time
         end_time_db = time.time()
         elapsed_time_db = end_time_db - start_time_db
-        print(f"Time elapsed for DB operations: {elapsed_time_db} seconds")
+        logger.info(f"Time elapsed for DB operations: {elapsed_time_db} seconds")

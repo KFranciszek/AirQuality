@@ -8,6 +8,10 @@ from geopy.distance import  geodesic
 
 from Initial_data_load_db import DataBaseWork
 
+from log_config import setup_logger
+
+logger = setup_logger(__name__)
+
 data_base_work = DataBaseWork()
 
 class StationsMap():
@@ -54,9 +58,12 @@ class StationsMap():
         try:
             geolocator = Nominatim(user_agent="myGeocoder")
             location_check=geolocator.geocode(location)
-            location_check=(location_check.latitude, location_check.longitude)
+            if location_check is not None:
+                location_check = (location_check.latitude, location_check.longitude)
+            else:
+                pass
         except (ValueError,AttributeError) as e:
-            print(f"Invalid error: {e}")
+            logger.info(f"Invalid error: {e}")
         sql = 'SELECT gegr_lat,gegr_lon,station_name,stations_id,city_name from stations'
         search_result=data_base_work.db_operations(sql)
         try:
@@ -71,5 +78,5 @@ class StationsMap():
                 if x <= distance_point:
                     result_km.append(search_result[index][2:5])
         except TypeError as te:
-            print(f"Invalid error: {te}")
+            logger.info(f"Invalid error: {te}")
         return result_km
