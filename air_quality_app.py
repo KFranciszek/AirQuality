@@ -12,6 +12,9 @@ from config import date_range_list,km_list
 from station_info import StationInfo
 from stations_map import StationsMap
 from Initial_data_load_db import DataBaseWork
+from log_config import setup_logger
+
+logger = setup_logger(__name__)
 
 
 station_info = StationInfo()
@@ -86,7 +89,7 @@ def sensor_filtr(sensors_mesure):
                                                                data=csv, file_name='large_df.csv',
                                                                mime='text/csv', )
                 except (ValueError, TypeError) as error:
-                        print("Error:", error)
+                        logger.info("Error: %s", error)
 
 def station_filtr(stations):
     station_list = [i[1] for i in stations]
@@ -125,16 +128,19 @@ else:
 if radio_value == "Distance point":
     point_chose = st.sidebar.text_input("Find stations in the given point")
     km = st.sidebar.selectbox("Km + ", km_list)
-    try:
-        station_list_point = stations_map.show_station_on_map_by_distance(point_chose, km)
-        station_list_point_list = {i[0]:i[1] for i in station_list_point}
-        select_point_stations = st.sidebar.selectbox("Select a station by distance point",
-                                                     station_list_point_list)
-        stations_id = station_list_point_list[select_point_stations]
-        sensors_mesure = station_info.sensors_list_by_station_all_db(stations_id)
-        sensor_filtr(sensors_mesure)
-    except (ValueError, TypeError,KeyError) as error:
-     print("Error:", error)
+    if point_chose:
+        try:
+            station_list_point = stations_map.show_station_on_map_by_distance(point_chose, km)
+            station_list_point_list = {i[0]:i[1] for i in station_list_point}
+            select_point_stations = st.sidebar.selectbox("Select a station by distance point",
+                                                         station_list_point_list)
+            stations_id = station_list_point_list[select_point_stations]
+            sensors_mesure = station_info.sensors_list_by_station_all_db(stations_id)
+            sensor_filtr(sensors_mesure)
+        except (ValueError, TypeError,KeyError) as error:
+         logger.info(f"Location not found: {point_chose}")
+    else:
+        pass
 
 
 #City map#

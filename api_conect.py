@@ -1,5 +1,9 @@
 import requests
 
+from log_config import setup_logger
+
+logger = setup_logger(__name__)
+
 def api_connecting(api_url):
     """
 
@@ -10,21 +14,21 @@ def api_connecting(api_url):
     try:
         response= requests.get(api_url,timeout=1800)
         if response.status_code == 400:
-            print("Bad Request: The server could not understand the request due to invalid syntax.")
+            logger.info("Bad Request: The server could not understand the request due to invalid syntax.")
         elif response.status_code == 401:
-            print("Unauthorized requests ")
+            logger.info("Unauthorized requests ")
         elif response.status_code == 500:
-            print("Internal Server Error: The server encountered an error while processing the request.")
+            logger.info("Internal Server Error: The server encountered an error while processing the request.")
         else:
             response.raise_for_status()
 
         return  response
 
     except requests.exceptions.ConnectTimeout:
-        print("Timeout requests")
+        logger.info("Timeout requests")
     except requests.exceptions.ConnectionError:
-        print("Network problem (DNS failure, refused connection...")
+        logger.info("Network problem (DNS failure, refused connection...")
     except requests.exceptions.URLRequired:
-        print("A valid URL is required to make a request.")
+        logger.info("A valid URL is required to make a request.")
     except requests.exceptions.TooManyRedirects:
-        print("TooManyRedirects")
+        logger.info("TooManyRedirects")
